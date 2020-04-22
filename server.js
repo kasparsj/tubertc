@@ -113,7 +113,7 @@ var socketServer = io.listen(webServer, ioOpts);
 
 // Set up easyrtc specific options
 easyrtc.setOption('demosEnable', false);
-easyrtc.setOption('updateCheckEnable', false);
+//easyrtc.setOption('updateCheckEnable', false);
 
 // If debugMode is enabled, make sure logging is set to debug
 if (debugMode) {
@@ -122,27 +122,44 @@ if (debugMode) {
 
 // Use appIceServers from settings.json if provided. The format should be the same
 // as that used by easyrtc (http://easyrtc.com/docs/guides/easyrtc_server_configuration.php)
-var iceServers = nconf.get('appIceServers');
-if (iceServers !== undefined) {
-    easyrtc.setOption('appIceServers', iceServers);
-} else {
-    easyrtc.setOption('appIceServers', [
-        {
-            url: 'stun:stun.l.google.com:19302'
-        },
-        {
-            url: 'stun:stun.sipgate.net'
-        },
-        {
-            url: 'stun:217.10.68.152'
-        },
-        {
-            url: 'stun:stun.sipgate.net:10000'
-        },
-        {
-            url: 'stun:217.10.68.152:10000'
+var twilioAccountSID = nconf.get('twilioAccountSID');
+var twilioAuthToken = nconf.get('twilioAuthToken');
+if (twilioAccountSID && twilioAuthToken) {
+    var twilio = require("twilio")(twilioAccountSID, twilioAuthToken);
+    twilio.tokens.create(function (err, response) {
+        if (err) {
+            setIceServers(nconf.get('appIceServers'));
+        } else {
+            easyrtc.setOption('appIceServers', response.iceServers);
         }
-    ]);
+    });
+}
+else {
+    setIceServers(nconf.get('appIceServers'));
+}
+
+function setIceServers(iceServers) {
+    if (iceServers !== undefined) {
+        easyrtc.setOption('appIceServers', iceServers);
+    } else {
+        easyrtc.setOption('appIceServers', [
+            {
+                url: 'stun:stun.l.google.com:19302'
+            },
+            {
+                url: 'stun:stun.sipgate.net'
+            },
+            {
+                url: 'stun:217.10.68.152'
+            },
+            {
+                url: 'stun:stun.sipgate.net:10000'
+            },
+            {
+                url: 'stun:217.10.68.152:10000'
+            }
+        ]);
+    }
 }
 
 easyrtc.listen(tubertcApp, socketServer);

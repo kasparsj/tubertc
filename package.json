@@ -19,7 +19,8 @@
         "express": "*",
         "nconf": "*",
         "socket.io": "*",
-        "handlebars": "*"
+        "handlebars": "*",
+        "twilio": "*"
     },
     "devDependencies": {
         "jsdoc": "^3.6.3"
